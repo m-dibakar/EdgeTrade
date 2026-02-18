@@ -1,24 +1,29 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const express = require('express');
-const mongoose = require('mongoose');
-const {HoldingsModel} = require('./model/HoldingsModel');
-const {PositionsModel} = require('./model/PositionsModel');
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+
+const { HoldingsModel } = require("./model/HoldingsModel");
+const { PositionsModel } = require("./model/PositionsModel");
 
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
 main()
- .then(()=>{
-    console.log("DB connected successfully...")
- })
- .catch(err => console.log(err));
+  .then(() => {
+    console.log("DB connected successfully...");
+  })
+  .catch((err) => console.log(err));
 
 async function main() {
   await mongoose.connect(uri);
 }
 
 const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
 // app.get("/addHoldings", async(req, res)=>{
 //     let tempHoldings = [
@@ -188,7 +193,16 @@ const app = express();
 //  res.send("Done!")
 // });
 
+app.get("/allHoldings", async (req, res) => {
+  let allHoldings = await HoldingsModel.find({});
+  res.json(allHoldings);
+});
 
-app.listen(PORT,()=>{
-    console.log("App started...")
+app.get("/allPositions", async (req, res) => {
+  let allPositions = await PositionsModel.find({});
+  res.json(allPositions);
+});
+
+app.listen(PORT, () => {
+  console.log("App started...");
 });
