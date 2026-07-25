@@ -12,13 +12,13 @@ function Pricing() {
                 <div className='col'>
                     <div className='row'>
                         <div className='col'>
-                            <img src='/media/images/pricing-eq.svg'/>
+                            <img src='/media/images/pricing-eq.svg' alt='Equity delivery pricing'/>
                         </div>
                         <div className='col'>
-                            <img src='/media/images/pricing-eq.svg'/>
+                            <img src='/media/images/pricing-eq.svg' alt='Mutual fund pricing'/>
                         </div>
                         <div className='col'>
-                            <img src='/media/images/other-trades.svg'/>
+                            <img src='/media/images/other-trades.svg' alt='Other trades pricing'/>
                         </div>
                     </div>
                 </div>

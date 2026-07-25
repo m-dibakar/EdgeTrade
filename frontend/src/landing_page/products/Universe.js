@@ -11,7 +11,7 @@ function Universe() {
             <div className='row p-5'>
                 <div className='col'>
                     <a href='https://www.zerodhafundhouse.com/' style={{ textDecoration: 'none' }}>
-                        <img className='mb-2' src='/media/images/zerodhaFundhouse.png' style={{ width: '50%' }} />
+                        <img className='mb-2' src='/media/images/zerodhaFundhouse.png' style={{ width: '50%' }} alt='Zerodha Fund House' />
                         <p style={{ fontSize: '13px', lineHeight: '1.3rem', color: 'gray' }}>Our asset management venture <br />
                             that is creating simple and transparent index <br />
                             funds to help you save for your goals.
@@ -20,7 +20,7 @@ function Universe() {
                 </div>
                 <div className='col'>
                     <a href='https://sensibull.com/' style={{ textDecoration: 'none' }}>
-                        <img className='mb-4' src='/media/images/sensibullLogo.svg' style={{ width: '60%' }} />
+                        <img className='mb-4' src='/media/images/sensibullLogo.svg' style={{ width: '60%' }} alt='Sensibull' />
                         <p style={{ fontSize: '13px', lineHeight: '1.3rem', color: 'gray' }}>Options trading platform that lets you <br />
                             create strategies, analyze positions, and examine<br />
                             data points like open interest, FII/DII, and more.
@@ -29,7 +29,7 @@ function Universe() {
                 </div>
                 <div className='col'>
                     <a href='https://www.tijorifinance.com/' style={{ textDecoration: 'none' }}>
-                        <img className='mb-2' src='/media/images/tijori.svg' style={{ width: '40%' }} />
+                        <img className='mb-2' src='/media/images/tijori.svg' style={{ width: '40%' }} alt='Tijori Finance' />
                         <p style={{ fontSize: '13px', lineHeight: '1.3rem', color: 'gray' }}>Investment research platform <br />
                             that offers detailed insights on stocks, <br />
                             sectors, supply chains, and more.
@@ -40,7 +40,7 @@ function Universe() {
             <div className='row p-5'>
                 <div className='col'>
                     <a href='https://www.streak.tech/' style={{ textDecoration: 'none' }}>
-                        <img className='mb-2' src='/media/images/streakLogo.png' style={{ width: '50%' }} />
+                        <img className='mb-2' src='/media/images/streakLogo.png' style={{ width: '50%' }} alt='Streak' />
                         <p style={{ fontSize: '13px', lineHeight: '1.3rem', color: 'gray' }}>Systematic trading platform <br/>
                             that allows you to create and backtest <br/>
                             strategies without coding.
@@ -49,7 +49,7 @@ function Universe() {
                 </div>
                 <div className='col'>
                     <a href='https://smallcase.zerodha.com/' style={{ textDecoration: 'none' }}>
-                        <img className='mb-2' src='/media/images/smallcaseLogo.png' style={{ width: '60%' }} />
+                        <img className='mb-2' src='/media/images/smallcaseLogo.png' style={{ width: '60%' }} alt='smallcase' />
                         <p style={{ fontSize: '13px', lineHeight: '1.3rem', color: 'gray' }}>Thematic investing platform <br />
                             that helps you invest in diversified<br />
                             baskets of stocks on ETFs.
@@ -58,7 +58,7 @@ function Universe() {
                 </div>
                 <div className='col'>
                     <a href='https://joinditto.in/' style={{ textDecoration: 'none' }}>
-                        <img className='mb-3' src='/media/images/dittoLogo.png' style={{ width: '40%' }} />
+                        <img className='mb-3' src='/media/images/dittoLogo.png' style={{ width: '40%' }} alt='Ditto Insurance' />
                         <p style={{ fontSize: '13px', lineHeight: '1.3rem', color: 'gray' }}>Personalized advice on life <br />
                             and health insurance. No spam <br />
                             and no mis-selling.
