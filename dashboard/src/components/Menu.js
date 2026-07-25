@@ -1,9 +1,18 @@
 import React, {useState} from "react";
 import {Link} from 'react-router-dom';
+import { logout } from "../api";
 
 const Menu = () => {
   const [selectedMenu, setSelectedMenu] = useState(0);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+
+  const username = localStorage.getItem("username") || "Trader";
+  const initials = username
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const handleMenuClick = (index) => {
     setSelectedMenu(index);
@@ -54,9 +63,16 @@ const Menu = () => {
         </ul>
         <hr />
         <div className="profile" onClick={handleProfileClick}>
-          <div className="avatar">DM</div>
-          <p className="username">USERID</p>
+          <div className="avatar">{initials}</div>
+          <p className="username">{username}</p>
         </div>
+        {isProfileDropdownOpen && (
+          <div className="profile-dropdown">
+            <button className="logout-btn" onClick={logout}>
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,220 +2,277 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
 const cors = require("cors");
+const bcrypt = require("bcryptjs");
 
 const { HoldingsModel } = require("./model/HoldingsModel");
 const { PositionsModel } = require("./model/PositionsModel");
 const { OrdersModel } = require("./model/OrdersModel");
-
+const { UsersModel } = require("./model/UsersModel");
+const { signToken, requireAuth } = require("./middleware/auth");
 
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
-
-main()
-  .then(() => {
-    console.log("DB connected successfully...");
-  })
-  .catch((err) => console.log(err));
 
 async function main() {
   await mongoose.connect(uri);
 }
 
 const app = express();
-app.use(cors());
-app.use(bodyParser.json());
 
-// app.get("/addHoldings", async(req, res)=>{
-//     let tempHoldings = [
-//       {
-//         name: "BHARTIARTL",
-//         qty: 2,
-//         avg: 538.05,
-//         price: 541.15,
-//         net: "+0.58%",
-//         day: "+2.99%",
-//       },
-//       {
-//         name: "HDFCBANK",
-//         qty: 2,
-//         avg: 1383.4,
-//         price: 1522.35,
-//         net: "+10.04%",
-//         day: "+0.11%",
-//       },
-//       {
-//         name: "HINDUNILVR",
-//         qty: 1,
-//         avg: 2335.85,
-//         price: 2417.4,
-//         net: "+3.49%",
-//         day: "+0.21%",
-//       },
-//       {
-//         name: "INFY",
-//         qty: 1,
-//         avg: 1350.5,
-//         price: 1555.45,
-//         net: "+15.18%",
-//         day: "-1.60%",
-//         isLoss: true,
-//       },
-//       {
-//         name: "ITC",
-//         qty: 5,
-//         avg: 202.0,
-//         price: 207.9,
-//         net: "+2.92%",
-//         day: "+0.80%",
-//       },
-//       {
-//         name: "KPITTECH",
-//         qty: 5,
-//         avg: 250.3,
-//         price: 266.45,
-//         net: "+6.45%",
-//         day: "+3.54%",
-//       },
-//       {
-//         name: "M&M",
-//         qty: 2,
-//         avg: 809.9,
-//         price: 779.8,
-//         net: "-3.72%",
-//         day: "-0.01%",
-//         isLoss: true,
-//       },
-//       {
-//         name: "RELIANCE",
-//         qty: 1,
-//         avg: 2193.7,
-//         price: 2112.4,
-//         net: "-3.71%",
-//         day: "+1.44%",
-//       },
-//       {
-//         name: "SBIN",
-//         qty: 4,
-//         avg: 324.35,
-//         price: 430.2,
-//         net: "+32.63%",
-//         day: "-0.34%",
-//         isLoss: true,
-//       },
-//       {
-//         name: "SGBMAY29",
-//         qty: 2,
-//         avg: 4727.0,
-//         price: 4719.0,
-//         net: "-0.17%",
-//         day: "+0.15%",
-//       },
-//       {
-//         name: "TATAPOWER",
-//         qty: 5,
-//         avg: 104.2,
-//         price: 124.15,
-//         net: "+19.15%",
-//         day: "-0.24%",
-//         isLoss: true,
-//       },
-//       {
-//         name: "TCS",
-//         qty: 1,
-//         avg: 3041.7,
-//         price: 3194.8,
-//         net: "+5.03%",
-//         day: "-0.25%",
-//         isLoss: true,
-//       },
-//       {
-//         name: "WIPRO",
-//         qty: 4,
-//         avg: 489.3,
-//         price: 577.75,
-//         net: "+18.08%",
-//         day: "+0.32%",
-//       },
-//     ];
+const allowedOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
-//     tempHoldings.forEach((item)=>{
-//       let newHolding = new HoldingsModel({
-//         name: item.name,
-//         qty: item.qty,
-//         avg: item.avg,
-//         price: item.price,
-//         net: item.net,
-//         day: item.day,
-//       });
+app.use(
+  cors({
+    origin: allowedOrigins.length ? allowedOrigins : true,
+  })
+);
+app.use(express.json());
 
-//       newHolding.save();
-//     });
-//     res.send("Done");
-// });
+const pct = (value) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
 
-// app.get("/addPositions", (req, res)=>{
-//   let tempPositions = [
-//   {
-//     product: "CNC",
-//     name: "EVEREADY",
-//     qty: 2,
-//     avg: 316.27,
-//     price: 312.35,
-//     net: "+0.58%",
-//     day: "-1.24%",
-//     isLoss: true,
-//   },
-//   {
-//     product: "CNC",
-//     name: "JUBLFOOD",
-//     qty: 1,
-//     avg: 3124.75,
-//     price: 3082.65,
-//     net: "+10.04%",
-//     day: "-1.35%",
-//     isLoss: true,
-//   },
-//  ];
-//  tempPositions.forEach((items)=>{
-//   let newPosition = new PositionsModel({
-//     product: items.product,
-//     name: items.name,
-//     qty: items.qty,
-//     avg: items.avg,
-//     price: items.price,
-//     net: items.net,
-//     day: items.day,
-//     isLoss: items.isLoss,
-//   });
+const DEMO_HOLDINGS = [
+  { name: "RELIANCE", qty: 4, avg: 2193.7, price: 2288.45 },
+  { name: "INFY", qty: 6, avg: 1350.5, price: 1455.45 },
+  { name: "TATAPOWER", qty: 20, avg: 104.2, price: 124.15 },
+];
 
-//   newPosition.save();
-//  });
-//  res.send("Done!")
-// });
+const DEMO_POSITIONS = [
+  { product: "CNC", name: "EVEREADY", qty: 2, avg: 316.27, price: 312.35 },
+];
 
-app.get("/allHoldings", async (req, res) => {
-  let allHoldings = await HoldingsModel.find({});
+async function seedDemoData(userId) {
+  await HoldingsModel.insertMany(
+    DEMO_HOLDINGS.map((h) => ({
+      ...h,
+      userId,
+      net: pct(((h.price - h.avg) / h.avg) * 100),
+      day: pct((Math.random() - 0.4) * 3),
+    }))
+  );
+  await PositionsModel.insertMany(
+    DEMO_POSITIONS.map((p) => ({
+      ...p,
+      userId,
+      net: pct(((p.price - p.avg) / p.avg) * 100),
+      day: pct((Math.random() - 0.4) * 3),
+      isLoss: p.price < p.avg,
+    }))
+  );
+}
+
+// ---------- health ----------
+app.get("/", (req, res) => {
+  res.json({ status: "ok", service: "EdgeTrade API" });
+});
+
+// ---------- auth ----------
+app.post("/signup", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "Username, email and password are required" });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+    const existing = await UsersModel.findOne({ email: email.toLowerCase() });
+    if (existing) {
+      return res.status(409).json({ error: "An account with this email already exists" });
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await UsersModel.create({ username, email, passwordHash });
+    await seedDemoData(user._id);
+    const token = signToken(user);
+    res.status(201).json({ token, user: { username: user.username, email: user.email } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Signup failed, please try again" });
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+    const user = await UsersModel.findOne({ email: email.toLowerCase() });
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    const token = signToken(user);
+    res.json({ token, user: { username: user.username, email: user.email } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed, please try again" });
+  }
+});
+
+app.get("/verify", requireAuth, async (req, res) => {
+  const user = await UsersModel.findById(req.user.id);
+  if (!user) return res.status(401).json({ error: "User not found" });
+  res.json({ user: { username: user.username, email: user.email } });
+});
+
+// ---------- portfolio ----------
+app.get("/allHoldings", requireAuth, async (req, res) => {
+  const allHoldings = await HoldingsModel.find({ userId: req.user.id });
   res.json(allHoldings);
 });
 
-app.get("/allPositions", async (req, res) => {
-  let allPositions = await PositionsModel.find({});
+app.get("/allPositions", requireAuth, async (req, res) => {
+  const allPositions = await PositionsModel.find({ userId: req.user.id });
   res.json(allPositions);
 });
 
-app.post('/newOrder', async(req,res)=>{
-  let newOrder =  new OrdersModel({
-    name: req.body.name,
-    qty: req.body.qty,
-    price: req.body.price,
-    mode: req.body.mode,
-  });
-  newOrder.save();
+app.get("/orders", requireAuth, async (req, res) => {
+  const orders = await OrdersModel.find({ userId: req.user.id }).sort({ createdAt: -1 });
+  res.json(orders);
+});
 
-  res.send("Order Placed")
+// ---------- funds ----------
+app.get("/funds", requireAuth, async (req, res) => {
+  const user = await UsersModel.findById(req.user.id);
+  if (!user) return res.status(401).json({ error: "User not found" });
+  const holdings = await HoldingsModel.find({ userId: req.user.id });
+  const invested = holdings.reduce((sum, h) => sum + h.avg * h.qty, 0);
+  res.json({ available: user.funds, invested });
 });
-app.listen(PORT, () => {
-  console.log("App started...");
+
+app.post("/funds/add", requireAuth, async (req, res) => {
+  const amount = Number(req.body.amount);
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 1000000) {
+    return res.status(400).json({ error: "Enter an amount between 1 and 10,00,000" });
+  }
+  const user = await UsersModel.findByIdAndUpdate(
+    req.user.id,
+    { $inc: { funds: amount } },
+    { new: true }
+  );
+  res.json({ available: user.funds });
 });
+
+// ---------- orders ----------
+app.post("/newOrder", requireAuth, async (req, res) => {
+  try {
+    const { name, mode } = req.body;
+    const qty = Number(req.body.qty);
+    const price = Number(req.body.price);
+
+    if (!name || !["BUY", "SELL"].includes(mode)) {
+      return res.status(400).json({ error: "Invalid order" });
+    }
+    if (!Number.isInteger(qty) || qty <= 0) {
+      return res.status(400).json({ error: "Quantity must be a positive whole number" });
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      return res.status(400).json({ error: "Price must be greater than 0" });
+    }
+
+    const user = await UsersModel.findById(req.user.id);
+    if (!user) return res.status(401).json({ error: "User not found" });
+
+    const cost = qty * price;
+    const holding = await HoldingsModel.findOne({ userId: req.user.id, name });
+
+    if (mode === "BUY") {
+      if (user.funds < cost) {
+        return res.status(400).json({
+          error: `Insufficient funds: need ₹${cost.toFixed(2)}, available ₹${user.funds.toFixed(2)}`,
+        });
+      }
+      if (holding) {
+        const newQty = holding.qty + qty;
+        holding.avg = (holding.avg * holding.qty + cost) / newQty;
+        holding.qty = newQty;
+        holding.price = price;
+        holding.net = pct(((price - holding.avg) / holding.avg) * 100);
+        await holding.save();
+      } else {
+        await HoldingsModel.create({
+          userId: req.user.id,
+          name,
+          qty,
+          avg: price,
+          price,
+          net: "+0.00%",
+          day: "+0.00%",
+        });
+      }
+      user.funds -= cost;
+    } else {
+      if (!holding || holding.qty < qty) {
+        return res.status(400).json({
+          error: `Not enough shares to sell: you hold ${holding ? holding.qty : 0} ${name}`,
+        });
+      }
+      if (holding.qty === qty) {
+        await holding.deleteOne();
+      } else {
+        holding.qty -= qty;
+        holding.price = price;
+        holding.net = pct(((price - holding.avg) / holding.avg) * 100);
+        await holding.save();
+      }
+      user.funds += cost;
+    }
+
+    await user.save();
+
+    // reflect today's trade in positions
+    const position = await PositionsModel.findOne({ userId: req.user.id, name });
+    const signedQty = mode === "BUY" ? qty : -qty;
+    if (position) {
+      position.qty += signedQty;
+      if (position.qty === 0) {
+        await position.deleteOne();
+      } else {
+        position.price = price;
+        position.net = pct(((price - position.avg) / position.avg) * 100);
+        position.isLoss = price < position.avg;
+        await position.save();
+      }
+    } else {
+      await PositionsModel.create({
+        userId: req.user.id,
+        product: "CNC",
+        name,
+        qty: signedQty,
+        avg: price,
+        price,
+        net: "+0.00%",
+        day: "+0.00%",
+        isLoss: false,
+      });
+    }
+
+    const order = await OrdersModel.create({
+      userId: req.user.id,
+      name,
+      qty,
+      price,
+      mode,
+    });
+
+    res.status(201).json({ message: "Order executed", order, funds: user.funds });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Order failed, please try again" });
+  }
+});
+
+main()
+  .then(() => {
+    console.log("DB connected successfully...");
+    app.listen(PORT, () => {
+      console.log(`App started on port ${PORT}...`);
+    });
+  })
+  .catch((err) => {
+    console.error("DB connection failed:", err);
+    process.exit(1);
+  });
