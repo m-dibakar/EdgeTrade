@@ -1,14 +1,50 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import api from "../api";
+import GeneralContext from "./GeneralContext";
+
+const fmt = (n) =>
+  Number(n || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 const Funds = () => {
+  const [funds, setFunds] = useState({ available: 0, invested: 0 });
+  const [message, setMessage] = useState("");
+  const { refreshTick } = useContext(GeneralContext);
+
+  const loadFunds = () => {
+    api.get("/funds").then((res) => setFunds(res.data));
+  };
+
+  useEffect(loadFunds, [refreshTick]);
+
+  const handleAddFunds = async () => {
+    const input = window.prompt("Amount to add (₹1 – ₹10,00,000):", "10000");
+    if (input === null) return;
+    const amount = Number(input);
+    try {
+      const res = await api.post("/funds/add", { amount });
+      setFunds((f) => ({ ...f, available: res.data.available }));
+      setMessage(`₹${fmt(amount)} added successfully`);
+    } catch (err) {
+      setMessage(
+        (err.response && err.response.data && err.response.data.error) ||
+          "Could not add funds"
+      );
+    }
+  };
+
   return (
     <>
       <div className="funds">
         <p>Instant, zero-cost fund transfers with UPI </p>
-        <Link className="btn btn-green">Add funds</Link>
-        <Link className="btn btn-blue">Withdraw</Link>
+        <button className="btn btn-green" onClick={handleAddFunds}>
+          Add funds
+        </button>
       </div>
+
+      {message && <p style={{ textAlign: "center", color: "#4184f3" }}>{message}</p>}
 
       <div className="row">
         <div className="col">
@@ -19,46 +55,21 @@ const Funds = () => {
           <div className="table">
             <div className="data">
               <p>Available margin</p>
-              <p className="imp colored">4,043.10</p>
+              <p className="imp colored">{fmt(funds.available)}</p>
             </div>
             <div className="data">
-              <p>Used margin</p>
-              <p className="imp">3,757.30</p>
+              <p>Used margin (invested)</p>
+              <p className="imp">{fmt(funds.invested)}</p>
             </div>
             <div className="data">
               <p>Available cash</p>
-              <p className="imp">4,043.10</p>
+              <p className="imp">{fmt(funds.available)}</p>
             </div>
             <hr />
             <div className="data">
-              <p>Opening Balance</p>
-              <p>4,043.10</p>
+              <p>Total account value</p>
+              <p>{fmt(funds.available + funds.invested)}</p>
             </div>
-            <div className="data">
-              <p>Opening Balance</p>
-              <p>3736.40</p>
-            </div>
-            <div className="data">
-              <p>Payin</p>
-              <p>4064.00</p>
-            </div>
-            <div className="data">
-              <p>SPAN</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Delivery margin</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Exposure</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Options premium</p>
-              <p>0.00</p>
-            </div>
-            <hr />
             <div className="data">
               <p>Collateral (Liquid funds)</p>
               <p>0.00</p>
@@ -67,17 +78,13 @@ const Funds = () => {
               <p>Collateral (Equity)</p>
               <p>0.00</p>
             </div>
-            <div className="data">
-              <p>Total Collateral</p>
-              <p>0.00</p>
-            </div>
           </div>
         </div>
 
         <div className="col">
           <div className="commodity">
             <p>You don't have a commodity account</p>
-            <Link className="btn btn-blue">Open Account</Link>
+            <button className="btn btn-blue">Open Account</button>
           </div>
         </div>
       </div>

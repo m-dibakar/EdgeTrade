@@ -843,3 +843,56 @@ hr {
 }
 
 
+
+/* profile dropdown / logout */
+.menu-container {
+  position: relative;
+}
+
+.profile-dropdown {
+  position: absolute;
+  right: 10px;
+  top: 55px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+}
+
+.logout-btn {
+  border: none;
+  background: none;
+  padding: 10px 24px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #d32f2f;
+}
+
+.logout-btn:hover {
+  background: #f9f9f9;
+}
+
+/* sell button in holdings table */
+.holdings-sell-btn {
+  border: none;
+  background: #ff5722;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.holdings-sell-btn:hover {
+  background: #ff8a65;
+}
+
+/* generic profit/loss helpers */
+h5.profit, h3.profit {
+  color: rgb(72, 194, 145);
+}
+
+h5.loss, h3.loss {
+  color: rgb(250, 118, 78);
+}
